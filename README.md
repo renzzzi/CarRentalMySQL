@@ -2,8 +2,10 @@
 
 Important MySQL reminders:
 
+UPDATE users SET Type = 1 WHERE Email = 'admin';
+
 CREATE TABLE users (
-    ID INT PRIMARY KEY,
+    ID INT PRIMARY KEY AUTO_INCREMENT,
     FirstName VARCHAR(50),
     LastName VARCHAR(50),
     Email VARCHAR(100),
@@ -13,9 +15,21 @@ CREATE TABLE users (
 );
 
 CREATE TABLE cars (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    brand VARCHAR(50) NOT NULL,
-    model VARCHAR(50) NOT NULL,
-    year INT NOT NULL,
-    available BOOLEAN DEFAULT TRUE
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    Brand VARCHAR(30),
+    Model VARCHAR(30),
+    Color VARCHAR(30),
+    Year INT,
+    Price DOUBLE,
+    Available INT
+);
+
+CREATE TABLE rents (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    User INT,
+    Car INT,
+    DateTime DATETIME,
+    Hours INT,
+    Total DOUBLE,
+    Status INT
 );

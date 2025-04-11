@@ -11,7 +11,7 @@ public class Rent {
 	private int hours;
 	private double total;
 	private int status;
-	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM HH:mm");
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM HH:mm:ss");
 	
 	//Status 0 ==> running
 	//       1 ==> returned

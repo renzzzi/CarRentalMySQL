@@ -21,7 +21,7 @@ public class RentCar implements Operation {
 	@Override
 	public void operation(Database database, JFrame f, User user) {
 		
-this.database = database;
+		this.database = database;
 		
 		frame = new JFrame("Rent Car");
 		frame.setSize(600, 650);
