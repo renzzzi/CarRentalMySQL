@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "java",
+        "name": "Launch Java Program",
+        "request": "launch",
+        "mainClass": "Main",
+        "classPaths": [
+          "lib/mysql.jar",
+          "."
+        ]
+      }
+    ]
+}
