@@ -58,7 +58,7 @@ public class UpdateCar implements Operation {
 			ids[i] = String.valueOf(idsArray.get(i-1));
 		}
 		
-		Model.JComboBox id = new Model.JComboBox(ids, 22);
+		JComboBox id = new JComboBox(ids, 22);
 		id.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
