@@ -1,135 +1,162 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
 public class Main {
-	
-	private static Database database;
-	
-	public static void main(String[] args) {
-		database = new Database();
-		start();
-	}
-	
-	public static void start() {
-		JFrame frame = new JFrame("Login");
-		frame.setSize(600, 330);
-		frame.setLocationRelativeTo(null);
-		frame.getContentPane().setBackground(new Color(250, 206, 27));
-		frame.setLayout(new BorderLayout());
-		
-		JLabel title = new JLabel("Welcome to Car Rental System", 35);
-		title.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
-		frame.add(title, BorderLayout.NORTH);
-		
-		JPanel panel = new JPanel(new GridLayout(3, 2, 15, 15));
-		panel.setBackground(null);
-		panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-		
-		panel.add(new JLabel("Email:", 22));
-		
-		JTextField email = new JTextField(22);
-		panel.add(email);
-		
-		panel.add(new JLabel("Password:", 22));
-		
-		JPasswordField password = new JPasswordField(22);
-		panel.add(password);
-		
-		JButton createAcc = new JButton("Create New Account", 22);
-		createAcc.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new AddNewAccount(0).operation(database, frame, null);
-				frame.dispose();
-			}
-		});
-		panel.add(createAcc);
-		
-		ArrayList<User> users = new ArrayList<>();
-		try {
-			String select = "SELECT * FROM `users`;";
-			ResultSet rs = database.getStatement().executeQuery(select);
-			while (rs.next()) {
-				User user;
-				int ID = rs.getInt("ID");
-				String firstName = rs.getString("FirstName");
-				String lastName = rs.getString("LastName");
-				String em = rs.getString("Email");
-				String phoneNumber = rs.getString("PhoneNumber");
-				String pass = rs.getString("Password");
-				int type = rs.getInt("Type");
-				
-				if (type==0) {
-					
-					user = new Client();
-					user.setID(ID);
-					user.setFirstName(firstName);
-					user.setLastName(lastName);
-					user.setEmail(em);
-					user.setPhoneNumber(phoneNumber);
-					user.setPassword(pass);
-					users.add(user);
-					
-				} else if (type==1) {
-					
-					user = new Admin();
-					user.setID(ID);
-					user.setFirstName(firstName);
-					user.setLastName(lastName);
-					user.setEmail(em);
-					user.setPhoneNumber(phoneNumber);
-					user.setPassword(pass);
-					users.add(user);
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		JButton login = new JButton("Login", 22);
-		login.addActionListener(new ActionListener() {
-			@SuppressWarnings("deprecation")
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				
-				if (email.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Email cannot be empty");
-					return;
-				}
-				
-				if (password.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Password cannot be empty");
-					return;
-				}
-				
-				boolean loggedIn = false;
-				for (User u : users) {
-					if (u.getEmail().equals(email.getText()) && u.getPassword().equals(password.getText())) {
-						loggedIn = true;
-						u.showList(database, frame);
-						frame.dispose();
-					}
-				}
-				if (!loggedIn) {
-					JOptionPane.showMessageDialog(frame, "Email or password doesn't match");
-				}
-			}
-		});
-		panel.add(login);
-		
-		frame.add(panel, BorderLayout.CENTER);
-		frame.setVisible(true);
-	}
+    private static Database database;
 
+    public static void main(String[] args) {
+        database = new Database();
+        setupLookAndFeel();
+        start();
+    }
+
+    private static void setupLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void start() {
+        JFrame frame = new JFrame("Car Rental System");
+        frame.setSize(900, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(ColorScheme.BACKGROUND);
+        
+        JPanel loginCard = new JPanel();
+        loginCard.setBackground(ColorScheme.SURFACE);
+        loginCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ColorScheme.BORDER, 2),
+            BorderFactory.createEmptyBorder(30, 40, 30, 40)
+        ));
+        loginCard.setLayout(new BoxLayout(loginCard, BoxLayout.Y_AXIS));
+        
+        JLabel logo = new JLabel("Car Rental System");
+        logo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        logo.setForeground(ColorScheme.PRIMARY);
+        logo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        final JTextField email = createStyledTextField("Email");
+        final JPasswordField password = createStyledPasswordField();
+        
+        JButton loginButton = new JButton("Login", 22);
+        loginButton.setBackground(ColorScheme.PRIMARY);
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton createAccountButton = new JButton("Create Account", 22);
+        createAccountButton.setBackground(ColorScheme.ACCENT);
+        createAccountButton.setForeground(Color.WHITE);
+        createAccountButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        final ArrayList<User> users = new ArrayList<>();
+        try {
+            ResultSet rs = database.getStatement().executeQuery("SELECT * FROM users;");
+            while (rs.next()) {
+                User user;
+                if (rs.getInt("Type") == 0) {
+                    user = new Client();
+                } else {
+                    user = new Admin();
+                }
+                user.setID(rs.getInt("ID"));
+                user.setFirstName(rs.getString("FirstName"));
+                user.setLastName(rs.getString("LastName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhoneNumber(rs.getString("PhoneNumber"));
+                user.setPassword(rs.getString("Password"));
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (email.getText().isEmpty()) {
+                    showError(frame, "Email cannot be empty");
+                    return;
+                }
+                if (password.getPassword().length == 0) {
+                    showError(frame, "Password cannot be empty");
+                    return;
+                }
+
+                for (User u : users) {
+                    if (u.getEmail().equals(email.getText()) && 
+                        u.getPassword().equals(new String(password.getPassword()))) {
+                        new DashboardFrame(u, database).setVisible(true);
+                        frame.dispose();
+                        return;
+                    }
+                }
+                showError(frame, "Invalid email or password");
+            }
+        });
+
+        createAccountButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new AddNewAccount(0).operation(database, frame, null);
+                frame.dispose();
+            }
+        });
+
+        loginCard.add(logo);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 30)));
+        loginCard.add(email);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 15)));
+        loginCard.add(password);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 25)));
+        loginCard.add(loginButton);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 10)));
+        loginCard.add(createAccountButton);
+
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(ColorScheme.BACKGROUND);
+        centerPanel.add(loginCard);
+
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+
+    private static JTextField createStyledTextField(String placeholder) {
+        JTextField field = new JTextField(20);
+        field.setBackground(ColorScheme.BACKGROUND);
+        field.setForeground(ColorScheme.TEXT_PRIMARY);
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ColorScheme.BORDER),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setHorizontalAlignment(JTextField.CENTER);  // Add this line
+        return field;
+    }
+    
+    private static JPasswordField createStyledPasswordField() {
+        JPasswordField field = new JPasswordField(20);
+        field.setBackground(ColorScheme.BACKGROUND);
+        field.setForeground(ColorScheme.TEXT_PRIMARY);
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ColorScheme.BORDER),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setHorizontalAlignment(JTextField.CENTER);  // Add this line
+        return field;
+    }
+
+    private static void showError(Component parent, String message) {
+        JOptionPane.showMessageDialog(parent, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

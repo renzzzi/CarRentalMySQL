@@ -8,7 +8,7 @@ public class Database {
 	
 	String url = "jdbc:mysql://localhost:3306/testdb";
 	String user = "root";
-	String password = "lmao";
+	String password = "Philippines101!";
 	private Statement statement;
 	
 	public Database() {

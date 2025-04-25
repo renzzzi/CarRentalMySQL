@@ -1,162 +1,200 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Font;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class AddNewAccount implements Operation {
-	
-	private int accType;
-	
-	public AddNewAccount(int accType) {
-		this.accType = accType;
-	}
+    private int accType;
 
-	@Override
-	public void operation(Database database, JFrame f, User u) {
-		
-		JFrame frame = new JFrame("Create New Account");
-		frame.setSize(600, 600);
-		frame.setLocationRelativeTo(f);
-		frame.getContentPane().setBackground(new Color(250, 206, 27));
-		frame.setLayout(new BorderLayout());
-		
-		JLabel title = new JLabel("Welcome to Car Rental System", 35);
-		title.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
-		frame.add(title, BorderLayout.NORTH);
-		
-		JPanel panel = new JPanel(new GridLayout(7, 2, 15, 15));
-		panel.setBackground(null);
-		panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-		
-		panel.add(new JLabel("First Name:", 22));
-		
-		JTextField firstName = new JTextField(22);
-		panel.add(firstName);
-		
-		panel.add(new JLabel("Last Name:", 22));
-		
-		JTextField lastName = new JTextField(22);
-		panel.add(lastName);
-		
-		panel.add(new JLabel("Email:", 22));
-		
-		JTextField email = new JTextField(22);
-		panel.add(email);
-		
-		panel.add(new JLabel("Phone Number:", 22));
-		
-		JTextField phoneNumber = new JTextField(22);
-		panel.add(phoneNumber);
-		
-		panel.add(new JLabel("Password:", 22));
-		
-		JPasswordField password = new JPasswordField(22);
-		panel.add(password);
-		
-		panel.add(new JLabel("Confirm Password:", 22));
-		
-		JPasswordField confirmPassword = new JPasswordField(22);
-		panel.add(confirmPassword);
-		
-		JButton login = new JButton("Login", 22);
-		login.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Main.start();
-				frame.dispose();
-			}
-		});
-		panel.add(login);
-		
-		JButton createAcc = new JButton("Create Account", 22);
-		createAcc.addActionListener(new ActionListener() {
-			@SuppressWarnings("deprecation")
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (firstName.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "First Name cannot be empty");
-					return;
-				}
-				if (lastName.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Last Name cannot be empty");
-					return;
-				}
-				if (email.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Email cannot be empty");
-					return;
-				}
-				if (phoneNumber.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Phone Number cannot be empty");
-					return;
-				}
-				if (password.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Password cannot be empty");
-					return;
-				}
-				if (confirmPassword.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Confirm Password cannot be empty");
-					return;
-				}
-				if (!password.getText().equals(confirmPassword.getText())) {
-					JOptionPane.showMessageDialog(frame, "Password doesn't match");
-					return;
-				}
-				
-				try {
-				
-				ArrayList<String> emails = new ArrayList<>();
-				ResultSet rs0 = database.getStatement().executeQuery("SELECT `Email` FROM `users`;");
-				while (rs0.next()) {
-					emails.add(rs0.getString("Email"));
-				}
-				
-				if (emails.contains(email.getText())) {
-					JOptionPane.showMessageDialog(frame, "This email is already used");
-					return;
-				}
-				
-				ResultSet rs = database.getStatement().executeQuery("SELECT COUNT(*) FROM `users`;");
-				rs.next();
-				int ID = rs.getInt("COUNT(*)");
-				
-				String insert = "INSERT INTO `users`(`ID`, `FirstName`, `LastName`,"
-						+ " `Email`, `PhoneNumber`, `Password`, `Type`) VALUES"
-						+ " ('"+ID+"','"+firstName.getText()+"','"+lastName.getText()+"','"+email.getText()+"',"
-								+ "'"+phoneNumber.getText()+"','"+password.getText()+"','"+accType+"');";
-				database.getStatement().execute(insert);
-				JOptionPane.showMessageDialog(frame, "Account created successfully");
-	
-				if (accType==0) {
-					User user = new Client();
-					user.setID(ID);
-					user.setFirstName(firstName.getText());
-					user.setLastName(lastName.getText());
-					user.setEmail(email.getText());
-					user.setPhoneNumber(phoneNumber.getText());
-					user.setPassword(password.getText());
-					user.showList(database, frame);
-					frame.dispose();
-				}
-				
-			} catch (SQLException e1) {
-				JOptionPane.showMessageDialog(frame, e1.getMessage());
-			}
-				
-			}
-		});
-		panel.add(createAcc);
-		
-		frame.add(panel, BorderLayout.CENTER);
-		frame.setVisible(true);	
-	}
-	
+    public AddNewAccount(int accType) {
+        this.accType = accType;
+    }
+
+    @Override
+    public void operation(Database database, JFrame f, User u) {
+        JFrame frame = new JFrame("Create New Account");
+        frame.setSize(600, 650);
+        frame.setLocationRelativeTo(f);
+        frame.setBackground(ColorScheme.BACKGROUND);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
+        mainPanel.setBackground(ColorScheme.BACKGROUND);
+        mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
+
+        // Title
+        JLabel title = new JLabel("Create New Account", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        // Form Panel
+        JPanel formPanel = new JPanel(new GridLayout(7, 1, 0, 15));
+        formPanel.setBackground(ColorScheme.BACKGROUND);
+
+        // Create and style fields
+        JTextField firstName = createStyledField();
+        JTextField lastName = createStyledField();
+        JTextField email = createStyledField();
+        JTextField phoneNumber = createStyledField();
+        JPasswordField password = createStyledPasswordField();
+        JPasswordField confirmPassword = createStyledPasswordField();
+
+        formPanel.add(createFieldPanel("First Name", firstName));
+        formPanel.add(createFieldPanel("Last Name", lastName));
+        formPanel.add(createFieldPanel("Email", email));
+        formPanel.add(createFieldPanel("Phone Number", phoneNumber));
+        formPanel.add(createFieldPanel("Password", password));
+        formPanel.add(createFieldPanel("Confirm Password", confirmPassword));
+
+        // Button Panel
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        buttonPanel.setBackground(ColorScheme.BACKGROUND);
+
+        JButton loginBtn = new JButton("Back to Login", 22);
+        JButton createAccBtn = new JButton("Create Account", 22);
+
+        loginBtn.setBackground(ColorScheme.ACCENT);
+        createAccBtn.setBackground(ColorScheme.PRIMARY);
+        
+        loginBtn.setForeground(Color.WHITE);
+        createAccBtn.setForeground(Color.WHITE);
+
+        loginBtn.addActionListener(e -> {
+            Main.start();
+            frame.dispose();
+        });
+
+        createAccBtn.addActionListener(e -> {
+            if (firstName.getText().isEmpty()) {
+                showError(frame, "First Name cannot be empty");
+                return;
+            }
+            if (lastName.getText().isEmpty()) {
+                showError(frame, "Last Name cannot be empty");
+                return;
+            }
+            if (email.getText().isEmpty()) {
+                showError(frame, "Email cannot be empty");
+                return;
+            }
+            if (phoneNumber.getText().isEmpty()) {
+                showError(frame, "Phone Number cannot be empty");
+                return;
+            }
+            if (password.getPassword().length == 0) {
+                showError(frame, "Password cannot be empty");
+                return;
+            }
+            if (confirmPassword.getPassword().length == 0) {
+                showError(frame, "Confirm Password cannot be empty");
+                return;
+            }
+            if (!new String(password.getPassword()).equals(new String(confirmPassword.getPassword()))) {
+                showError(frame, "Passwords don't match");
+                return;
+            }
+
+            try {
+                ArrayList<String> emails = new ArrayList<>();
+                ResultSet rs0 = database.getStatement().executeQuery("SELECT `Email` FROM `users`;");
+                while (rs0.next()) {
+                    emails.add(rs0.getString("Email"));
+                }
+
+                if (emails.contains(email.getText())) {
+                    showError(frame, "This email is already used");
+                    return;
+                }
+
+                ResultSet rs = database.getStatement().executeQuery("SELECT COUNT(*) FROM `users`;");
+                rs.next();
+                int ID = rs.getInt("COUNT(*)");
+
+                String insert = "INSERT INTO `users`(`ID`, `FirstName`, `LastName`, `Email`, `PhoneNumber`, `Password`, `Type`) VALUES " +
+                        "('" + ID + "','" + firstName.getText() + "','" + lastName.getText() + "','" + email.getText() + "'," +
+                        "'" + phoneNumber.getText() + "','" + new String(password.getPassword()) + "','" + accType + "');";
+                database.getStatement().execute(insert);
+                
+                JOptionPane.showMessageDialog(frame, 
+                    "Account created successfully", 
+                    "Success", 
+                    JOptionPane.INFORMATION_MESSAGE);
+
+                if (accType == 0) {
+                    User user = new Client();
+                    user.setID(ID);
+                    user.setFirstName(firstName.getText());
+                    user.setLastName(lastName.getText());
+                    user.setEmail(email.getText());
+                    user.setPhoneNumber(phoneNumber.getText());
+                    user.setPassword(new String(password.getPassword()));
+                    user.showList(database, frame);
+                    frame.dispose();
+                }
+
+            } catch (SQLException ex) {
+                showError(frame, ex.getMessage());
+            }
+        });
+
+        buttonPanel.add(loginBtn);
+        buttonPanel.add(createAccBtn);
+        formPanel.add(buttonPanel);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+
+    private JPanel createFieldPanel(String labelText, JComponent field) {
+        JPanel panel = new JPanel(new BorderLayout(0, 5));
+        panel.setBackground(ColorScheme.BACKGROUND);
+        
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setForeground(ColorScheme.TEXT_PRIMARY);
+        
+        panel.add(label, BorderLayout.NORTH);
+        panel.add(field, BorderLayout.CENTER);
+        
+        return panel;
+    }
+
+    private JTextField createStyledField() {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
+        field.setBackground(ColorScheme.SURFACE);
+        field.setForeground(ColorScheme.TEXT_PRIMARY);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ColorScheme.BORDER),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        return field;
+    }
+
+    private JPasswordField createStyledPasswordField() {
+        JPasswordField field = new JPasswordField(22);  // Added size parameter
+        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
+        field.setBackground(ColorScheme.SURFACE);
+        field.setForeground(ColorScheme.TEXT_PRIMARY);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ColorScheme.BORDER),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        return field;
+    }
+
+    private void showError(JFrame parent, String message) {
+        JOptionPane.showMessageDialog(parent, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

@@ -1,195 +1,208 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Font;
+import java.awt.Dimension;
+import java.awt.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class UpdateCar implements Operation {
-	
-	private JTextField brand, model, color, year, price;
-	private Database database;
-	private JFrame frame;
+    private JTextField brand, model, color, year, price;
+    private Database database;
+    private JFrame frame;
 
-	@Override
-	public void operation(Database database, JFrame f, User user) {
-		
-		this.database = database;
-		
-		frame = new JFrame("Update Car");
-		frame.setSize(600, 600);
-		frame.setLocationRelativeTo(f);
-		frame.getContentPane().setBackground(new Color(250, 206, 27));
-		frame.setLayout(new BorderLayout());
-		
-		JLabel title = new JLabel("Update Car", 35);
-		title.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
-		frame.add(title, BorderLayout.NORTH);
-		
-		JPanel panel = new JPanel(new GridLayout(7, 2, 15, 15));
-		panel.setBackground(null);
-		panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-		
-		panel.add(new JLabel("ID:", 22));
-		
-		String[] ids = new String[] {" "};
-		ArrayList<Integer> idsArray = new ArrayList<>();
-		try {
-			ResultSet rs0 = database.getStatement()
-					.executeQuery("SELECT `ID`, `Available` FROM `cars`;");
-			while (rs0.next()) {
-				if (rs0.getInt("Available")<2) idsArray.add(rs0.getInt("ID"));
-			}
-		} catch (Exception e0) {
-			JOptionPane.showMessageDialog(frame, e0.getMessage());
-			frame.dispose();
-		}
-		
-		ids = new String[idsArray.size()+1];
-		ids[0] = " ";
-		for (int i=1;i<=idsArray.size();i++) {
-			ids[i] = String.valueOf(idsArray.get(i-1));
-		}
-		
-		JComboBox id = new JComboBox(ids, 22);
-		id.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateData(id.getSelectedItem().toString());
-			}
-		});
-		panel.add(id);
-		
-		panel.add(new JLabel("Brand:", 22));
-		
-		brand = new JTextField(22);
-		panel.add(brand);
-		
-		panel.add(new JLabel("Model:", 22));
-		
-		model = new JTextField(22);
-		panel.add(model);
-		
-		panel.add(new JLabel("Color:", 22));
-		
-		color = new JTextField(22);
-		panel.add(color);
-		
-		panel.add(new JLabel("Year:", 22));
-		
-		year = new JTextField(22);
-		panel.add(year);
-		
-		panel.add(new JLabel("Price per Hour:", 22));
-		
-		price = new JTextField(22);
-		panel.add(price);
-		
-		JButton cancel = new JButton("Cancel", 22);
-		cancel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				frame.dispose();
-			}
-		});
-		panel.add(cancel);
-		
-		JButton confirm = new JButton("Confirm", 22);
-		confirm.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (id.getSelectedItem().toString().equals(" ")) {
-					JOptionPane.showMessageDialog(frame, "ID cannot be empty");
-					return;
-				}
-				if (brand.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Brand cannot be empty");
-					return;
-				}
-				if (model.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Model cannot be empty");
-					return;
-				}
-				if (color.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Color cannot be empty");
-					return;
-				}
-				if (year.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Year cannot be empty");
-					return;
-				}
-				if (price.getText().equals("")) {
-					JOptionPane.showMessageDialog(frame, "Price cannot be empty");
-					return;
-				}
-				int yearInt;
-				double priceDoub;
-				try {
-					yearInt = Integer.parseInt(year.getText());
-				} catch (Exception e1) {
-					JOptionPane.showMessageDialog(frame, "Year must be int");
-					return;
-				}
-				try {
-					priceDoub = Double.parseDouble(price.getText());
-				} catch (Exception e1) {
-					JOptionPane.showMessageDialog(frame, "Price must be double");
-					return;
-				}
-				
-				try {
-				
-					String update = "UPDATE `cars` SET `Brand`='"+brand.getText()+"',`Model`='"+model.getText()+"',"
-							+ "`Color`='"+color.getText()+"',`Year`='"+yearInt+"',`Price`='"+priceDoub+"' "
-									+ "WHERE `ID` = '"+id.getSelectedItem().toString()+"';";
-					
-					database.getStatement().execute(update);
-					JOptionPane.showMessageDialog(frame, "Car updated successfully");
-					frame.dispose();
-					} catch (SQLException e2) {
-						JOptionPane.showMessageDialog(frame, e2.getMessage());
-					}
-				
-			}
-		});
-		panel.add(confirm);
-		
-		frame.add(panel, BorderLayout.CENTER);
-		frame.setVisible(true);
-		frame.requestFocus();
-	}
-	
-	private void updateData(String ID) {
-		if (ID.equals(" ")) {
-			brand.setText("");
-			model.setText("");
-			color.setText("");
-			year.setText("");
-			price.setText("");
-		} else {
-			try {
-				ResultSet rs1 = database.getStatement()
-						.executeQuery("SELECT * FROM `cars` WHERE `ID` = '"+ID+"';");
-				rs1.next();
-				Car car = new Car();
-				car.setID(rs1.getInt("ID"));
-				brand.setText(rs1.getString("Brand"));
-				model.setText(rs1.getString("Model"));
-				color.setText(rs1.getString("Color"));
-				year.setText(String.valueOf(rs1.getInt("Year")));
-				price.setText(String.valueOf(rs1.getDouble("Price")));
-			} catch (Exception e1) {
-				JOptionPane.showMessageDialog(frame, e1.getMessage());
-				frame.dispose();
-			}
-		}
-	}
+    @Override
+    public void operation(Database database, JFrame f, User user) {
+        this.database = database;
 
+        frame = new JFrame("Update Car");
+        frame.setSize(600, 650);
+        frame.setLocationRelativeTo(f);
+        frame.setBackground(ColorScheme.BACKGROUND);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
+        mainPanel.setBackground(ColorScheme.BACKGROUND);
+        mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
+
+        JLabel title = new JLabel("Update Car Details", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        JPanel formPanel = new JPanel(new GridLayout(7, 1, 0, 15));
+        formPanel.setBackground(ColorScheme.BACKGROUND);
+
+        // Get available cars
+        ArrayList<Integer> idsArray = new ArrayList<>();
+        try {
+            ResultSet rs0 = database.getStatement()
+                .executeQuery("SELECT `ID`, `Available` FROM `cars`;");
+            while (rs0.next()) {
+                if (rs0.getInt("Available") < 2) idsArray.add(rs0.getInt("ID"));
+            }
+        } catch (Exception e0) {
+            showError(frame, e0.getMessage());
+            frame.dispose();
+            return;
+        }
+
+        String[] ids = new String[idsArray.size() + 1];
+        ids[0] = " ";
+        for (int i = 0; i < idsArray.size(); i++) {
+            ids[i + 1] = String.valueOf(idsArray.get(i));
+        }
+
+        // Create form fields
+        JComboBox idCombo = new JComboBox(ids, 22);
+        brand = createStyledField("Brand");
+        model = createStyledField("Model");
+        color = createStyledField("Color");
+        year = createStyledField("Year");
+        price = createStyledField("Price per Hour");
+
+        formPanel.add(createFieldPanel("Select Car", idCombo));
+        formPanel.add(createFieldPanel("Brand", brand));
+        formPanel.add(createFieldPanel("Model", model));
+        formPanel.add(createFieldPanel("Color", color));
+        formPanel.add(createFieldPanel("Year", year));
+        formPanel.add(createFieldPanel("Price per Hour", price));
+
+        idCombo.addActionListener(e -> updateData(idCombo.getSelectedItem().toString()));
+
+        // Buttons
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        buttonPanel.setBackground(ColorScheme.BACKGROUND);
+
+        JButton cancelBtn = new JButton("Cancel", 22);
+        JButton updateBtn = new JButton("Update Car", 22);
+
+        cancelBtn.setBackground(ColorScheme.ACCENT);
+        updateBtn.setBackground(ColorScheme.PRIMARY);
+        
+        cancelBtn.setForeground(Color.WHITE);
+        updateBtn.setForeground(Color.WHITE);
+
+        cancelBtn.addActionListener(e -> frame.dispose());
+
+        updateBtn.addActionListener(e -> {
+            if (idCombo.getSelectedItem().toString().equals(" ")) {
+                showError(frame, "Please select a car to update");
+                return;
+            }
+            if (brand.getText().isEmpty()) {
+                showError(frame, "Brand cannot be empty");
+                return;
+            }
+            if (model.getText().isEmpty()) {
+                showError(frame, "Model cannot be empty");
+                return;
+            }
+            if (color.getText().isEmpty()) {
+                showError(frame, "Color cannot be empty");
+                return;
+            }
+            if (year.getText().isEmpty()) {
+                showError(frame, "Year cannot be empty");
+                return;
+            }
+            if (price.getText().isEmpty()) {
+                showError(frame, "Price cannot be empty");
+                return;
+            }
+
+            try {
+                int yearInt = Integer.parseInt(year.getText());
+                double priceDouble = Double.parseDouble(price.getText());
+
+                String update = "UPDATE `cars` SET " +
+                    "`Brand`='" + brand.getText() + "'," +
+                    "`Model`='" + model.getText() + "'," +
+                    "`Color`='" + color.getText() + "'," +
+                    "`Year`='" + yearInt + "'," +
+                    "`Price`='" + priceDouble + "' " +
+                    "WHERE `ID` = '" + idCombo.getSelectedItem().toString() + "';";
+
+                database.getStatement().execute(update);
+                
+                JOptionPane.showMessageDialog(frame, 
+                    "Car updated successfully", 
+                    "Success", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+                
+            } catch (NumberFormatException ex) {
+                showError(frame, "Invalid year or price format");
+            } catch (SQLException ex) {
+                showError(frame, ex.getMessage());
+            }
+        });
+
+        buttonPanel.add(cancelBtn);
+        buttonPanel.add(updateBtn);
+        formPanel.add(buttonPanel);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        frame.add(mainPanel);
+        frame.setVisible(true);
+    }
+
+    private void updateData(String ID) {
+        if (ID.equals(" ")) {
+            brand.setText("");
+            model.setText("");
+            color.setText("");
+            year.setText("");
+            price.setText("");
+        } else {
+            try {
+                ResultSet rs1 = database.getStatement()
+                    .executeQuery("SELECT * FROM `cars` WHERE `ID` = '" + ID + "';");
+                if (rs1.next()) {
+                    brand.setText(rs1.getString("Brand"));
+                    model.setText(rs1.getString("Model"));
+                    color.setText(rs1.getString("Color"));
+                    year.setText(String.valueOf(rs1.getInt("Year")));
+                    price.setText(String.valueOf(rs1.getDouble("Price")));
+                }
+            } catch (Exception e1) {
+                showError(frame, e1.getMessage());
+                frame.dispose();
+            }
+        }
+    }
+
+    private JPanel createFieldPanel(String labelText, JComponent field) {
+        JPanel panel = new JPanel(new BorderLayout(0, 5));
+        panel.setBackground(ColorScheme.BACKGROUND);
+        
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setForeground(ColorScheme.TEXT_PRIMARY);
+        
+        panel.add(label, BorderLayout.NORTH);
+        panel.add(field, BorderLayout.CENTER);
+        
+        return panel;
+    }
+
+    private JTextField createStyledField(String placeholder) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
+        field.setBackground(ColorScheme.SURFACE);
+        field.setForeground(ColorScheme.TEXT_PRIMARY);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ColorScheme.BORDER),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        return field;
+    }
+
+    private void showError(Component parent, String message) {
+        JOptionPane.showMessageDialog(parent, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }
