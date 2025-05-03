@@ -11,7 +11,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class DeleteCar implements Operation {
-    private JTextField brand, model, color, year, price;
+    private CustomTextField brand, model, color, year, price;
     private Database database;
     private JFrame frame;
 
@@ -20,7 +20,7 @@ public class DeleteCar implements Operation {
         this.database = database;
 
         frame = new JFrame("Delete Car");
-        frame.setSize(600, 650);
+        frame.setSize(600, 700);
         frame.setLocationRelativeTo(f);
         frame.setBackground(ColorScheme.BACKGROUND);
 
@@ -28,15 +28,14 @@ public class DeleteCar implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Delete Car", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Delete Car", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel formPanel = new JPanel(new GridLayout(7, 1, 0, 15));
+        JPanel formPanel = new JPanel(new GridLayout(7, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        // Car ID Selection
         ArrayList<Integer> idsArray = new ArrayList<>();
         try {
             ResultSet rs0 = database.getStatement().executeQuery("SELECT `ID`, `Available` FROM `cars`;");
@@ -55,23 +54,21 @@ public class DeleteCar implements Operation {
             ids[i + 1] = String.valueOf(idsArray.get(i));
         }
 
-        JComboBox idCombo = new JComboBox(ids, 22);
-        idCombo.setBackground(ColorScheme.SURFACE);
-        idCombo.setForeground(ColorScheme.TEXT_PRIMARY);
-        idCombo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        idCombo.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        ((JLabel)idCombo.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
-        formPanel.add(createFieldPanel("Car ID", idCombo));
+        CustomComboBox idCombo = new CustomComboBox(ids, 22);
+        idCombo.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
+        
+        brand = new CustomTextField(22);
+        model = new CustomTextField(22);
+        color = new CustomTextField(22);
+        year = new CustomTextField(22);
+        price = new CustomTextField(22);
 
-        // Car Details Fields
-        brand = createStyledField("Brand");
-        model = createStyledField("Model");
-        color = createStyledField("Color");
-        year = createStyledField("Year");
-        price = createStyledField("Price per Hour");
+        Dimension fieldSize = new Dimension(Integer.MAX_VALUE, 45);
+        brand.setPreferredSize(fieldSize);
+        model.setPreferredSize(fieldSize);
+        color.setPreferredSize(fieldSize);
+        year.setPreferredSize(fieldSize);
+        price.setPreferredSize(fieldSize);
 
         brand.setEditable(false);
         model.setEditable(false);
@@ -79,6 +76,7 @@ public class DeleteCar implements Operation {
         year.setEditable(false);
         price.setEditable(false);
 
+        formPanel.add(createFieldPanel("Car ID", idCombo));
         formPanel.add(createFieldPanel("Brand", brand));
         formPanel.add(createFieldPanel("Model", model));
         formPanel.add(createFieldPanel("Color", color));
@@ -87,18 +85,21 @@ public class DeleteCar implements Operation {
 
         idCombo.addActionListener(e -> updateData(idCombo.getSelectedItem().toString()));
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton cancelBtn = new JButton("Cancel", 22);
-        JButton deleteBtn = new JButton("Delete Car", 22);
+        CustomButton cancelBtn = new CustomButton("Cancel", 22);
+        CustomButton deleteBtn = new CustomButton("Delete Car", 22);
 
         cancelBtn.setBackground(ColorScheme.ACCENT);
         deleteBtn.setBackground(ColorScheme.PRIMARY);
         
         cancelBtn.setForeground(Color.WHITE);
         deleteBtn.setForeground(Color.WHITE);
+
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        cancelBtn.setPreferredSize(buttonSize);
+        deleteBtn.setPreferredSize(buttonSize);
 
         cancelBtn.addActionListener(e -> frame.dispose());
 
@@ -166,27 +167,13 @@ public class DeleteCar implements Operation {
         JPanel panel = new JPanel(new BorderLayout(0, 5));
         panel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel label = new CustomLabel(labelText, 14);
         label.setForeground(ColorScheme.TEXT_PRIMARY);
         
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    private JTextField createStyledField(String placeholder) {
-        JTextField field = new JTextField();
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
     }
 
     private void showError(Component parent, String message) {

@@ -8,5 +8,6 @@ public class CustomLabel extends javax.swing.JLabel {
         setFont(new Font("Segoe UI", Font.BOLD, fontSize));
         setBackground(null);
         setHorizontalAlignment(SwingConstants.CENTER);
+        setForeground(ColorScheme.TEXT_PRIMARY);
     }
 }

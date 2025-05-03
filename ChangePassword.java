@@ -1,113 +1,123 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JLabel;  // Added this import
-import javax.swing.SwingConstants;  // Added this import
-import javax.swing.JPasswordField;  // Added this import
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class ChangePassword implements Operation {
 
     @Override
     public void operation(Database database, JFrame f, User user) {
-    
         JFrame frame = new JFrame("Change Password");
-        frame.setSize(600, 400);
+        frame.setSize(600, 500);
         frame.setLocationRelativeTo(f);
         frame.getContentPane().setBackground(ColorScheme.BACKGROUND);
-        frame.setLayout(new BorderLayout(0, 10));
+        frame.setLayout(new BorderLayout(0, 20));
         
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(ColorScheme.PRIMARY);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
         
-        JLabel title = new JLabel("Change Password", 28);
+        CustomLabel title = new CustomLabel("Change Password", 32);
         title.setForeground(Color.WHITE);
-        title.setHorizontalAlignment(SwingConstants.CENTER);  // Changed from JLabel.CENTER to SwingConstants.CENTER
-        title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         titlePanel.add(title, BorderLayout.CENTER);
         
         frame.add(titlePanel, BorderLayout.NORTH);
         
-        JPanel panel = new JPanel(new GridLayout(4, 2, 20, 20));
-        panel.setBackground(ColorScheme.BACKGROUND);
-        panel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        JPanel formPanel = new JPanel(new GridLayout(4, 1, 0, 20));
+        formPanel.setBackground(ColorScheme.BACKGROUND);
+        formPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
         
-        panel.add(new JLabel("Old Password:", 22));
+        CustomPasswordField oldPassword = new CustomPasswordField(22);
+        CustomPasswordField newPassword = new CustomPasswordField(22);
+        CustomPasswordField confirmPassword = new CustomPasswordField(22);
         
-        JPasswordField oldPassword = new JPasswordField(22);
-        panel.add(oldPassword);
+        formPanel.add(createFieldPanel("Old Password", oldPassword));
+        formPanel.add(createFieldPanel("New Password", newPassword));
+        formPanel.add(createFieldPanel("Confirm Password", confirmPassword));
         
-        panel.add(new JLabel("New Password:", 22));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+        buttonPanel.setBackground(ColorScheme.BACKGROUND);
         
-        JPasswordField newPassword = new JPasswordField(22);
-        panel.add(newPassword);
+        CustomButton cancelBtn = new CustomButton("Cancel", 22);
+        CustomButton confirmBtn = new CustomButton("Confirm", 22);
         
-        panel.add(new JLabel("Confirm Password:", 22));
+        cancelBtn.setBackground(ColorScheme.ACCENT);
+        confirmBtn.setBackground(ColorScheme.PRIMARY);
         
-        JPasswordField confirmPassword = new JPasswordField(22);
-        panel.add(confirmPassword);
+        cancelBtn.setForeground(Color.WHITE);
+        confirmBtn.setForeground(Color.WHITE);
         
-        JButton cancel = new JButton("Cancel", 22);
-        cancel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        cancelBtn.setPreferredSize(buttonSize);
+        confirmBtn.setPreferredSize(buttonSize);
+        
+        cancelBtn.addActionListener(e -> frame.dispose());
+        
+        confirmBtn.addActionListener(e -> {
+            if (oldPassword.getPassword().length == 0) {
+                showError(frame, "Old Password cannot be empty");
+                return;
+            }
+            if (newPassword.getPassword().length == 0) {
+                showError(frame, "New Password cannot be empty");
+                return;
+            }
+            if (confirmPassword.getPassword().length == 0) {
+                showError(frame, "Confirm Password cannot be empty");
+                return;
+            }
+            if (!String.valueOf(oldPassword.getPassword()).equals(user.getPassword())) {
+                showError(frame, "Incorrect Password");
+                return;
+            }
+            if (!String.valueOf(newPassword.getPassword()).equals(String.valueOf(confirmPassword.getPassword()))) {
+                showError(frame, "Passwords don't match");
+                return;
+            }
+            
+            try {
+                String update = "UPDATE `users` SET `Password`='" + 
+                    String.valueOf(newPassword.getPassword()) + 
+                    "' WHERE `ID` = '" + user.getID() + "';";
+                database.getStatement().execute(update);
+                JOptionPane.showMessageDialog(frame, "Password changed successfully", 
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+                user.setPassword(String.valueOf(newPassword.getPassword()));
                 frame.dispose();
+            } catch (SQLException ex) {
+                showError(frame, ex.getMessage());
             }
         });
-        panel.add(cancel);
         
-        JButton confirm = new JButton("Confirm", 22);
-        confirm.addActionListener(new ActionListener() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public void actionPerformed(ActionEvent ev) {
-
-                if (oldPassword.getText().equals("")) {
-                    JOptionPane.showMessageDialog(frame, "Old Password cannot be empty");
-                    return;
-                }
-                if (newPassword.getText().equals("")) {
-                    JOptionPane.showMessageDialog(frame, "New Password cannot be empty");
-                    return;
-                }
-                if (confirmPassword.getText().equals("")) {
-                    JOptionPane.showMessageDialog(frame, "Confirm Password cannot be empty");
-                    return;
-                }
-                if (!oldPassword.getText().equals(user.getPassword())) {
-                    JOptionPane.showMessageDialog(frame, "Incorrect Password");
-                    return;
-                }
-                if (!newPassword.getText().equals(confirmPassword.getText())) {
-                    JOptionPane.showMessageDialog(frame, "Password doesn't match");
-                    return;
-                }
-                
-                try {
-                    String update = "UPDATE `users` SET "
-                            + "`Password`='"+newPassword.getText()+"' WHERE `ID` = '"+user.getID()+"';";
-                    database.getStatement().execute(update);
-                    JOptionPane.showMessageDialog(frame, "Password changed successfully");
-                    user.setPassword(newPassword.getText());
-                    frame.dispose();
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(frame, e.getMessage());
-                }
-                
-            }
-        });
-        panel.add(confirm);
+        buttonPanel.add(cancelBtn);
+        buttonPanel.add(confirmBtn);
+        formPanel.add(buttonPanel);
         
-        frame.add(panel, BorderLayout.CENTER);
+        frame.add(formPanel, BorderLayout.CENTER);
         frame.setVisible(true);
-        
     }
-
+    
+    private JPanel createFieldPanel(String labelText, JComponent field) {
+        JPanel panel = new JPanel(new BorderLayout(0, 5));
+        panel.setBackground(ColorScheme.BACKGROUND);
+        
+        CustomLabel label = new CustomLabel(labelText, 14);
+        label.setForeground(ColorScheme.TEXT_PRIMARY);
+        
+        panel.add(label, BorderLayout.NORTH);
+        panel.add(field, BorderLayout.CENTER);
+        
+        return panel;
+    }
+    
+    private void showError(Component parent, String message) {
+        JOptionPane.showMessageDialog(parent, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

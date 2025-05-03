@@ -11,16 +11,16 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class RentCar implements Operation {
-    private JTextField brand, model, color, year, price;
     private Database database;
     private JFrame frame;
+    private CustomTextField carDetails, price, hours, total;
 
     @Override
     public void operation(Database database, JFrame f, User user) {
         this.database = database;
 
-        frame = new JFrame("Rent a Car");
-        frame.setSize(600, 700);
+        frame = new JFrame("Rent Car");
+        frame.setSize(600, 600);
         frame.setLocationRelativeTo(f);
         frame.setBackground(ColorScheme.BACKGROUND);
 
@@ -28,133 +28,175 @@ public class RentCar implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Rent a Car", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Rent Car", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel formPanel = new JPanel(new GridLayout(8, 1, 0, 15));
+        JPanel formPanel = new JPanel(new GridLayout(6, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        // Car ID Selection
-        ArrayList<Integer> idsArray = new ArrayList<>();
+        ArrayList<Car> cars = new ArrayList<>();
         try {
-            ResultSet rs0 = database.getStatement().executeQuery("SELECT `ID`, `Available` FROM `cars`;");
-            while (rs0.next()) {
-                if (rs0.getInt("Available") < 2) idsArray.add(rs0.getInt("ID"));
+            String select = "SELECT * FROM cars WHERE Available = 0;";
+            ResultSet rs = database.getStatement().executeQuery(select);
+            while (rs.next()) {
+                Car car = new Car();
+                car.setID(rs.getInt("ID"));
+                car.setBrand(rs.getString("Brand"));
+                car.setModel(rs.getString("Model"));
+                car.setColor(rs.getString("Color"));
+                car.setPrice(rs.getDouble("Price"));
+                car.setAvailable(rs.getInt("Available"));
+                cars.add(car);
             }
-        } catch (Exception e0) {
-            showError(frame, e0.getMessage());
+            rs.close();
+
+            if (cars.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, 
+                    "No cars are available for rent at the moment.", 
+                    "Information", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+                return;
+            }
+        } catch (SQLException e) {
+            showError(frame, e.getMessage());
             frame.dispose();
             return;
         }
 
-        String[] ids = new String[idsArray.size() + 1];
-        ids[0] = " ";
-        for (int i = 0; i < idsArray.size(); i++) {
-            ids[i + 1] = String.valueOf(idsArray.get(i));
+        String[] carIds = new String[cars.size() + 1];
+        carIds[0] = " ";
+        for (int i = 0; i < cars.size(); i++) {
+            carIds[i + 1] = String.valueOf(cars.get(i).getID());
         }
 
-        JComboBox idCombo = new JComboBox(ids, 22);
-        formPanel.add(createFieldPanel("Select Car", idCombo));
+        CustomComboBox carCombo = new CustomComboBox(carIds, 22);
+        carCombo.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
+        formPanel.add(createFieldPanel("Select Car", carCombo));
 
-        // Car Details Fields
-        brand = createStyledField("Brand");
-        model = createStyledField("Model");
-        color = createStyledField("Color");
-        year = createStyledField("Year");
-        price = createStyledField("Price per Hour");
-        JTextField hours = createStyledField("Number of Hours");
+        carDetails = new CustomTextField(22);
+        price = new CustomTextField(22);
+        hours = new CustomTextField(22);
+        total = new CustomTextField(22);
 
-        brand.setEditable(false);
-        model.setEditable(false);
-        color.setEditable(false);
-        year.setEditable(false);
+        Dimension fieldSize = new Dimension(Integer.MAX_VALUE, 45);
+        carDetails.setPreferredSize(fieldSize);
+        price.setPreferredSize(fieldSize);
+        hours.setPreferredSize(fieldSize);
+        total.setPreferredSize(fieldSize);
+
+        carDetails.setEditable(false);
         price.setEditable(false);
+        total.setEditable(false);
 
-        formPanel.add(createFieldPanel("Brand", brand));
-        formPanel.add(createFieldPanel("Model", model));
-        formPanel.add(createFieldPanel("Color", color));
-        formPanel.add(createFieldPanel("Year", year));
+        formPanel.add(createFieldPanel("Car Details", carDetails));
         formPanel.add(createFieldPanel("Price per Hour", price));
-        formPanel.add(createFieldPanel("Rental Hours", hours));
+        formPanel.add(createFieldPanel("Hours", hours));
+        formPanel.add(createFieldPanel("Total", total));
 
-        idCombo.addActionListener(e -> updateData(idCombo.getSelectedItem().toString()));
+        carCombo.addActionListener(e -> {
+            String selectedId = carCombo.getSelectedItem().toString();
+            if (!selectedId.equals(" ")) {
+                Car selectedCar = cars.stream()
+                    .filter(c -> c.getID() == Integer.parseInt(selectedId))
+                    .findFirst()
+                    .orElse(null);
+                updateCarDetails(selectedCar);
+            } else {
+                clearFields();
+            }
+        });
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+        hours.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                try {
+                    if (!hours.getText().isEmpty()) {
+                        int hrs = Integer.parseInt(hours.getText());
+                        double pricePerHour = Double.parseDouble(price.getText().substring(1));
+                        total.setText(String.format("$%.2f", hrs * pricePerHour));
+                    } else {
+                        total.setText("");
+                    }
+                } catch (NumberFormatException ex) {
+                    total.setText("");
+                }
+            }
+        });
+
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton viewCarsBtn = new JButton("View All Cars", 22);
-        JButton cancelBtn = new JButton("Cancel", 22);
-        JButton rentBtn = new JButton("Rent Car", 22);
+        CustomButton cancelBtn = new CustomButton("Cancel", 22);
+        CustomButton rentBtn = new CustomButton("Rent Car", 22);
 
-        viewCarsBtn.setBackground(ColorScheme.SECONDARY);
         cancelBtn.setBackground(ColorScheme.ACCENT);
         rentBtn.setBackground(ColorScheme.PRIMARY);
-
-        viewCarsBtn.setForeground(Color.WHITE);
+        
         cancelBtn.setForeground(Color.WHITE);
         rentBtn.setForeground(Color.WHITE);
 
-        viewCarsBtn.addActionListener(e -> new ViewCars().operation(database, frame, user));
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        cancelBtn.setPreferredSize(buttonSize);
+        rentBtn.setPreferredSize(buttonSize);
+
         cancelBtn.addActionListener(e -> frame.dispose());
 
         rentBtn.addActionListener(e -> {
-            if (idCombo.getSelectedItem().toString().equals(" ")) {
+            if (carCombo.getSelectedItem().toString().equals(" ")) {
                 showError(frame, "Please select a car");
                 return;
             }
             if (hours.getText().isEmpty()) {
-                showError(frame, "Please enter rental hours");
+                showError(frame, "Please enter number of hours");
                 return;
             }
 
             try {
-                int hoursInt = Integer.parseInt(hours.getText());
-                
-                ResultSet rs0 = database.getStatement()
-                    .executeQuery("SELECT * FROM `cars` WHERE `ID` = '" + 
-                                idCombo.getSelectedItem().toString() + "';");
-                rs0.next();
-                
-                if (rs0.getInt("Available") != 0) {
-                    showError(frame, "This car is not available");
+                int hrs = Integer.parseInt(hours.getText());
+                if (hrs <= 0) {
+                    showError(frame, "Hours must be greater than 0");
                     return;
                 }
 
-                ResultSet rs1 = database.getStatement()
-                    .executeQuery("SELECT COUNT(*) FROM `rents`;");
-                rs1.next();
-                int ID = rs1.getInt("COUNT(*)");
+                Car selectedCar = cars.stream()
+                    .filter(c -> c.getID() == Integer.parseInt(carCombo.getSelectedItem().toString()))
+                    .findFirst()
+                    .orElse(null);
 
-                double total = rs0.getDouble("Price") * hoursInt;
+                if (selectedCar != null) {
+                    ResultSet checkRs = database.getStatement()
+                        .executeQuery("SELECT Available FROM cars WHERE ID = '" + selectedCar.getID() + "';");
+                    if (checkRs.next() && checkRs.getInt("Available") != 0) {
+                        showError(frame, "This car is no longer available.");
+                        frame.dispose();
+                        return;
+                    }
+                    checkRs.close();
 
-                Rent rent = new Rent();
-                String insert = "INSERT INTO `rents`(`ID`, `User`, `Car`, `DateTime`, `Hours`, " +
-                    "`Total`, `Status`) VALUES ('" + ID + "','" + user.getID() + "'," +
-                    "'" + rs0.getInt("ID") + "','" + rent.getDateTime() + "','" + hoursInt + "'," +
-                    "'" + total + "','0');";
-
-                database.getStatement().execute(insert);
-                
-                String updateCar = "UPDATE `cars` SET `Available`='1' WHERE `ID` = '" + 
-                                 rs0.getInt("ID") + "';";
-                database.getStatement().execute(updateCar);
-
-                JOptionPane.showMessageDialog(frame, 
-                    String.format("Car rented successfully\nTotal Cost: $%.2f", total),
-                    "Success", 
-                    JOptionPane.INFORMATION_MESSAGE);
-                frame.dispose();
+                    double totalAmount = hrs * selectedCar.getPrice();
+                    
+                    String insert = "INSERT INTO `rents`(`User`, `Car`, `DateTime`, `Hours`, `Total`, `Status`) VALUES " +
+                            "('" + user.getID() + "','" + selectedCar.getID() + "',NOW(),'" + hrs + "','" + totalAmount + "','0');";
+                    String update = "UPDATE `cars` SET `Available`='1' WHERE `ID` = '" + selectedCar.getID() + "';";
+                    
+                    database.getStatement().execute(insert);
+                    database.getStatement().execute(update);
+                    
+                    JOptionPane.showMessageDialog(frame, 
+                        String.format("Car rented successfully\nTotal: $%.2f", totalAmount),
+                        "Success", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                    frame.dispose();
+                }
             } catch (NumberFormatException ex) {
-                showError(frame, "Hours must be a valid number");
+                showError(frame, "Invalid number of hours");
             } catch (SQLException ex) {
                 showError(frame, ex.getMessage());
             }
         });
 
-        buttonPanel.add(viewCarsBtn);
         buttonPanel.add(cancelBtn);
         buttonPanel.add(rentBtn);
         formPanel.add(buttonPanel);
@@ -164,56 +206,42 @@ public class RentCar implements Operation {
         frame.setVisible(true);
     }
 
-    private void updateData(String ID) {
-        if (ID.equals(" ")) {
-            brand.setText("");
-            model.setText("");
-            color.setText("");
-            year.setText("");
-            price.setText("");
-        } else {
-            try {
-                ResultSet rs1 = database.getStatement()
-                    .executeQuery("SELECT * FROM `cars` WHERE `ID` = '" + ID + "';");
-                if (rs1.next()) {
-                    brand.setText(rs1.getString("Brand"));
-                    model.setText(rs1.getString("Model"));
-                    color.setText(rs1.getString("Color"));
-                    year.setText(String.valueOf(rs1.getInt("Year")));
-                    price.setText(String.format("$%.2f", rs1.getDouble("Price")));
+    private void updateCarDetails(Car car) {
+        if (car != null) {
+            carDetails.setText(String.format("%s %s (%s)", 
+                car.getBrand(), car.getModel(), car.getColor()));
+            price.setText(String.format("$%.2f", car.getPrice()));
+            if (!hours.getText().isEmpty()) {
+                try {
+                    int hrs = Integer.parseInt(hours.getText());
+                    total.setText(String.format("$%.2f", hrs * car.getPrice()));
+                } catch (NumberFormatException e) {
+                    total.setText("");
                 }
-            } catch (Exception e1) {
-                showError(frame, e1.getMessage());
-                frame.dispose();
             }
+        } else {
+            clearFields();
         }
+    }
+
+    private void clearFields() {
+        carDetails.setText("");
+        price.setText("");
+        hours.setText("");
+        total.setText("");
     }
 
     private JPanel createFieldPanel(String labelText, JComponent field) {
         JPanel panel = new JPanel(new BorderLayout(0, 5));
         panel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel label = new CustomLabel(labelText, 14);
         label.setForeground(ColorScheme.TEXT_PRIMARY);
         
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    private JTextField createStyledField(String placeholder) {
-        JTextField field = new JTextField();
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
     }
 
     private void showError(Component parent, String message) {

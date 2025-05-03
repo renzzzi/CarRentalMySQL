@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.Font;
 import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
@@ -21,31 +22,35 @@ public class AddNewAccount implements Operation {
     @Override
     public void operation(Database database, JFrame f, User u) {
         JFrame frame = new JFrame("Create New Account");
-        frame.setSize(600, 650);
+        frame.setSize(600, 700);
         frame.setLocationRelativeTo(f);
         frame.setBackground(ColorScheme.BACKGROUND);
 
-        JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 25));
         mainPanel.setBackground(ColorScheme.BACKGROUND);
-        mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
+        mainPanel.setBorder(new EmptyBorder(30, 50, 30, 50));
 
-        // Title
-        JLabel title = new JLabel("Create New Account", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
-        mainPanel.add(title, BorderLayout.NORTH);
-
-        // Form Panel
-        JPanel formPanel = new JPanel(new GridLayout(7, 1, 0, 15));
+        CustomLabel title = new CustomLabel("Create New Account", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JPanel formPanel = new JPanel(new GridLayout(7, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        // Create and style fields
-        JTextField firstName = createStyledField();
-        JTextField lastName = createStyledField();
-        JTextField email = createStyledField();
-        JTextField phoneNumber = createStyledField();
-        JPasswordField password = createStyledPasswordField();
-        JPasswordField confirmPassword = createStyledPasswordField();
+        CustomTextField firstName = new CustomTextField(22);
+        CustomTextField lastName = new CustomTextField(22);
+        CustomTextField email = new CustomTextField(22);
+        CustomTextField phoneNumber = new CustomTextField(22);
+        CustomPasswordField password = new CustomPasswordField(22);
+        CustomPasswordField confirmPassword = new CustomPasswordField(22);
+
+        Dimension fieldSize = new Dimension(Integer.MAX_VALUE, 45);
+        firstName.setPreferredSize(fieldSize);
+        lastName.setPreferredSize(fieldSize);
+        email.setPreferredSize(fieldSize);
+        phoneNumber.setPreferredSize(fieldSize);
+        password.setPreferredSize(fieldSize);
+        confirmPassword.setPreferredSize(fieldSize);
 
         formPanel.add(createFieldPanel("First Name", firstName));
         formPanel.add(createFieldPanel("Last Name", lastName));
@@ -54,18 +59,15 @@ public class AddNewAccount implements Operation {
         formPanel.add(createFieldPanel("Password", password));
         formPanel.add(createFieldPanel("Confirm Password", confirmPassword));
 
-        // Button Panel
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton loginBtn = new JButton("Back to Login", 22);
-        JButton createAccBtn = new JButton("Create Account", 22);
+        CustomButton loginBtn = new CustomButton("Back to Login", 22);
+        CustomButton createAccBtn = new CustomButton("Create Account", 22);
 
-        loginBtn.setBackground(ColorScheme.ACCENT);
-        createAccBtn.setBackground(ColorScheme.PRIMARY);
-        
-        loginBtn.setForeground(Color.WHITE);
-        createAccBtn.setForeground(Color.WHITE);
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        loginBtn.setPreferredSize(buttonSize);
+        createAccBtn.setPreferredSize(buttonSize);
 
         loginBtn.addActionListener(e -> {
             Main.start();
@@ -149,6 +151,7 @@ public class AddNewAccount implements Operation {
         buttonPanel.add(createAccBtn);
         formPanel.add(buttonPanel);
 
+        mainPanel.add(title, BorderLayout.NORTH);
         mainPanel.add(formPanel, BorderLayout.CENTER);
         frame.add(mainPanel);
         frame.setVisible(true);
@@ -158,40 +161,13 @@ public class AddNewAccount implements Operation {
         JPanel panel = new JPanel(new BorderLayout(0, 5));
         panel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel label = new CustomLabel(labelText, 14);
         label.setForeground(ColorScheme.TEXT_PRIMARY);
         
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    private JTextField createStyledField() {
-        JTextField field = new JTextField();
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
-    }
-
-    private JPasswordField createStyledPasswordField() {
-        JPasswordField field = new JPasswordField(22);  // Added size parameter
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
     }
 
     private void showError(JFrame parent, String message) {

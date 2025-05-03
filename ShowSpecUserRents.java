@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.Font;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,15 +23,14 @@ public class ShowSpecUserRents implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Select User", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Select User", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel formPanel = new JPanel(new GridLayout(2, 1, 0, 15));
+        JPanel formPanel = new JPanel(new GridLayout(2, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        // Get user IDs
         ArrayList<Integer> ids = new ArrayList<>();
         try {
             ResultSet rs0 = database.getStatement()
@@ -50,14 +50,13 @@ public class ShowSpecUserRents implements Operation {
             idsArr[i + 1] = String.valueOf(ids.get(i));
         }
 
-        // User selection combo box
-        JComboBox userCombo = new JComboBox(idsArr, 22);
+        CustomComboBox userCombo = new CustomComboBox(idsArr, 22);
+        userCombo.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
         
         JPanel comboPanel = new JPanel(new BorderLayout(0, 5));
         comboPanel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel comboLabel = new JLabel("User ID");
-        comboLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel comboLabel = new CustomLabel("User ID", 14);
         comboLabel.setForeground(ColorScheme.TEXT_PRIMARY);
         
         comboPanel.add(comboLabel, BorderLayout.NORTH);
@@ -65,18 +64,21 @@ public class ShowSpecUserRents implements Operation {
         
         formPanel.add(comboPanel);
 
-        // Buttons panel
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton showUsersBtn = new JButton("Show All Users", 22);
-        JButton viewRentsBtn = new JButton("View Rentals", 22);
+        CustomButton showUsersBtn = new CustomButton("Show All Users", 22);
+        CustomButton viewRentsBtn = new CustomButton("View Rentals", 22);
 
         showUsersBtn.setBackground(ColorScheme.SECONDARY);
         viewRentsBtn.setBackground(ColorScheme.PRIMARY);
         
         showUsersBtn.setForeground(Color.WHITE);
         viewRentsBtn.setForeground(Color.WHITE);
+
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        showUsersBtn.setPreferredSize(buttonSize);
+        viewRentsBtn.setPreferredSize(buttonSize);
 
         showUsersBtn.addActionListener(e -> showUsers(database, frame));
         
@@ -109,9 +111,9 @@ public class ShowSpecUserRents implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Client List", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Client List", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
         String[] header = {"ID", "First Name", "Last Name", "Email", "Phone"};
@@ -146,7 +148,7 @@ public class ShowSpecUserRents implements Operation {
             userData[i][4] = u.getPhoneNumber();
         }
 
-        JTable table = new JTable(userData, header, ColorScheme.PRIMARY, ColorScheme.SURFACE);
+        CustomTable table = new CustomTable(userData, header);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBackground(ColorScheme.BACKGROUND);
         scrollPane.getViewport().setBackground(ColorScheme.BACKGROUND);
@@ -154,10 +156,10 @@ public class ShowSpecUserRents implements Operation {
 
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Close button
-        JButton closeButton = new JButton("Close", 22);
+        CustomButton closeButton = new CustomButton("Close", 22);
         closeButton.setBackground(ColorScheme.ACCENT);
         closeButton.setForeground(Color.WHITE);
+        closeButton.setPreferredSize(new Dimension(120, 45));
         closeButton.addActionListener(e -> frame.dispose());
 
         JPanel buttonPanel = new JPanel(new BorderLayout());

@@ -19,24 +19,21 @@ public class ShowAllRents implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        // Title Panel
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel title = new JLabel("All Rentals", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("All Rentals", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         titlePanel.add(title, BorderLayout.CENTER);
 
         mainPanel.add(titlePanel, BorderLayout.NORTH);
 
-        // Table Headers
         String[] header = {
             "ID", "Name", "Email", "Phone", "Car ID", "Car Details", 
             "Date Time", "Hours", "Total", "Status"
         };
 
-        // Fetch Rentals Data
         ArrayList<Rent> rents = new ArrayList<>();
         ArrayList<Integer> carIDs = new ArrayList<>();
         ArrayList<Integer> userIDs = new ArrayList<>();
@@ -55,11 +52,9 @@ public class ShowAllRents implements Operation {
                 rents.add(rent);
             }
 
-            // Fetch associated user and car data
             for (int j = 0; j < rents.size(); j++) {
                 Rent r = rents.get(j);
 
-                // Get user data
                 ResultSet rs2 = database.getStatement()
                     .executeQuery("SELECT * FROM `users` WHERE `ID` = '" + userIDs.get(j) + "';");
                 if (rs2.next()) {
@@ -72,7 +67,6 @@ public class ShowAllRents implements Operation {
                     r.setUser(u);
                 }
 
-                // Get car data
                 ResultSet rs3 = database.getStatement()
                     .executeQuery("SELECT * FROM `cars` WHERE `ID` = '" + carIDs.get(j) + "';");
                 if (rs3.next()) {
@@ -92,7 +86,6 @@ public class ShowAllRents implements Operation {
             return;
         }
 
-        // Prepare table data
         String[][] rentData = new String[rents.size()][header.length];
         for (int i = 0; i < rents.size(); i++) {
             Rent r = rents.get(i);
@@ -109,8 +102,7 @@ public class ShowAllRents implements Operation {
             rentData[i][9] = r.getStatusToString();
         }
 
-        // Create and style table
-        JTable table = new JTable(rentData, header, ColorScheme.PRIMARY, ColorScheme.SURFACE);
+        CustomTable table = new CustomTable(rentData, header);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBackground(ColorScheme.BACKGROUND);
         scrollPane.getViewport().setBackground(ColorScheme.BACKGROUND);
@@ -118,10 +110,10 @@ public class ShowAllRents implements Operation {
 
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add close button
-        JButton closeButton = new JButton("Close", 22);
+        CustomButton closeButton = new CustomButton("Close", 22);
         closeButton.setBackground(ColorScheme.ACCENT);
         closeButton.setForeground(Color.WHITE);
+        closeButton.setPreferredSize(new Dimension(120, 45));
         closeButton.addActionListener(e -> frame.dispose());
 
         JPanel buttonPanel = new JPanel(new BorderLayout());
@@ -133,63 +125,6 @@ public class ShowAllRents implements Operation {
 
         frame.add(mainPanel);
         frame.setVisible(true);
-    }
-
-    private JTable createStyledTable(String[][] data, String[] columnNames) {
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable table = new JTable(data, columnNames, ColorScheme.PRIMARY, ColorScheme.SURFACE);
-        table.setBackground(ColorScheme.SURFACE);
-        table.setForeground(ColorScheme.TEXT_PRIMARY);
-        table.setGridColor(ColorScheme.BORDER);
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setRowHeight(30);
-        table.setIntercellSpacing(new Dimension(10, 10));
-        table.setShowGrid(true);
-
-        // Style header
-        JTableHeader header = table.getTableHeader();
-        header.setBackground(ColorScheme.PRIMARY);
-        header.setForeground(Color.WHITE);
-        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        header.setBorder(BorderFactory.createLineBorder(ColorScheme.BORDER));
-        ((DefaultTableCellRenderer)header.getDefaultRenderer())
-            .setHorizontalAlignment(SwingConstants.CENTER);
-
-        // Center align all columns
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        TableColumnModel columnModel = table.getColumnModel();
-        for (int i = 0; i < columnModel.getColumnCount(); i++) {
-            columnModel.getColumn(i).setCellRenderer(centerRenderer);
-        }
-
-        // Set preferred column widths
-        int[] columnWidths = {50, 150, 200, 120, 60, 200, 150, 70, 100, 100};
-        for (int i = 0; i < columnWidths.length; i++) {
-            columnModel.getColumn(i).setPreferredWidth(columnWidths[i]);
-        }
-
-        // Add row highlighting
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                int row = table.rowAtPoint(evt.getPoint());
-                if (row >= 0) {
-                    table.setRowSelectionInterval(row, row);
-                }
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                table.clearSelection();
-            }
-        });
-
-        return table;
     }
 
     private void showError(Component parent, String message) {

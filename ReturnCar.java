@@ -13,14 +13,14 @@ import javax.swing.border.EmptyBorder;
 public class ReturnCar implements Operation {
     private Database database;
     private JFrame frame;
-    private JTextField carDetails, rentDate, rentHours, baseTotal, delayHours, finalTotal;
+    private CustomTextField carDetails, rentDate, rentHours, baseTotal, delayHours, finalTotal;
 
     @Override
     public void operation(Database database, JFrame f, User user) {
         this.database = database;
 
         frame = new JFrame("Return Car");
-        frame.setSize(600, 650);
+        frame.setSize(600, 700);
         frame.setLocationRelativeTo(f);
         frame.setBackground(ColorScheme.BACKGROUND);
 
@@ -28,19 +28,23 @@ public class ReturnCar implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Return Car", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Return Car", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel formPanel = new JPanel(new GridLayout(8, 1, 0, 15));
+        JPanel formPanel = new JPanel(new GridLayout(8, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        // Get active rentals
         ArrayList<Rent> rents = new ArrayList<>();
         try {
-            String select = "SELECT * FROM `rents` WHERE `User` = '" + user.getID() + 
-                          "' AND `Status` = '0';";
+            String select = "SELECT r.*, c.Brand, c.Model, c.Color, c.Price, c.Available " +
+                          "FROM rents r " +
+                          "JOIN cars c ON r.Car = c.ID " +
+                          "WHERE r.User = '" + user.getID() + "' " +
+                          "AND r.Status = 0 " +
+                          "AND c.Available = 1;";
+            
             ResultSet rs = database.getStatement().executeQuery(select);
             while (rs.next()) {
                 Rent rent = new Rent();
@@ -50,18 +54,26 @@ public class ReturnCar implements Operation {
                 rent.setTotal(rs.getDouble("Total"));
                 rent.setStatus(rs.getInt("Status"));
 
-                ResultSet rs2 = database.getStatement()
-                    .executeQuery("SELECT * FROM `cars` WHERE `ID` = '" + rs.getInt("Car") + "';");
-                if (rs2.next()) {
-                    Car car = new Car();
-                    car.setID(rs2.getInt("ID"));
-                    car.setBrand(rs2.getString("Brand"));
-                    car.setModel(rs2.getString("Model"));
-                    car.setColor(rs2.getString("Color"));
-                    car.setPrice(rs2.getDouble("Price"));
-                    rent.setCar(car);
-                }
+                Car car = new Car();
+                car.setID(rs.getInt("Car"));
+                car.setBrand(rs.getString("Brand"));
+                car.setModel(rs.getString("Model"));
+                car.setColor(rs.getString("Color"));
+                car.setPrice(rs.getDouble("Price"));
+                car.setAvailable(rs.getInt("Available"));
+                rent.setCar(car);
+                
                 rents.add(rent);
+            }
+            rs.close();
+
+            if (rents.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, 
+                    "You don't have any cars to return.", 
+                    "Information", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+                return;
             }
         } catch (SQLException e) {
             showError(frame, e.getMessage());
@@ -75,16 +87,24 @@ public class ReturnCar implements Operation {
             rentIds[i + 1] = String.valueOf(rents.get(i).getID());
         }
 
-        JComboBox rentCombo = new JComboBox(rentIds, 22);
+        CustomComboBox rentCombo = new CustomComboBox(rentIds, 22);
+        rentCombo.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
         formPanel.add(createFieldPanel("Select Rental", rentCombo));
 
-        // Rental Details Fields
-        carDetails = createStyledField("");
-        rentDate = createStyledField("");
-        rentHours = createStyledField("");
-        baseTotal = createStyledField("");
-        delayHours = createStyledField("");
-        finalTotal = createStyledField("");
+        carDetails = new CustomTextField(22);
+        rentDate = new CustomTextField(22);
+        rentHours = new CustomTextField(22);
+        baseTotal = new CustomTextField(22);
+        delayHours = new CustomTextField(22);
+        finalTotal = new CustomTextField(22);
+
+        Dimension fieldSize = new Dimension(Integer.MAX_VALUE, 45);
+        carDetails.setPreferredSize(fieldSize);
+        rentDate.setPreferredSize(fieldSize);
+        rentHours.setPreferredSize(fieldSize);
+        baseTotal.setPreferredSize(fieldSize);
+        delayHours.setPreferredSize(fieldSize);
+        finalTotal.setPreferredSize(fieldSize);
 
         carDetails.setEditable(false);
         rentDate.setEditable(false);
@@ -112,18 +132,21 @@ public class ReturnCar implements Operation {
             }
         });
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton cancelBtn = new JButton("Cancel", 22);
-        JButton returnBtn = new JButton("Return Car", 22);
+        CustomButton cancelBtn = new CustomButton("Cancel", 22);
+        CustomButton returnBtn = new CustomButton("Return Car", 22);
 
         cancelBtn.setBackground(ColorScheme.ACCENT);
         returnBtn.setBackground(ColorScheme.PRIMARY);
         
         cancelBtn.setForeground(Color.WHITE);
         returnBtn.setForeground(Color.WHITE);
+
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        cancelBtn.setPreferredSize(buttonSize);
+        returnBtn.setPreferredSize(buttonSize);
 
         cancelBtn.addActionListener(e -> frame.dispose());
 
@@ -141,6 +164,25 @@ public class ReturnCar implements Operation {
                     .orElse(null);
 
                 if (selectedRent != null) {
+                    ResultSet checkRs = database.getStatement()
+                        .executeQuery("SELECT r.Status, c.Available FROM rents r " +
+                                    "JOIN cars c ON r.Car = c.ID " +
+                                    "WHERE r.ID = '" + rentId + "';");
+                    
+                    if (checkRs.next()) {
+                        if (checkRs.getInt("Status") != 0) {
+                            showError(frame, "This rental has already been completed.");
+                            frame.dispose();
+                            return;
+                        }
+                        if (checkRs.getInt("Available") != 1) {
+                            showError(frame, "This car has already been returned.");
+                            frame.dispose();
+                            return;
+                        }
+                    }
+                    checkRs.close();
+
                     String updateRent = "UPDATE `rents` SET `Status`='1' WHERE `ID` = '" + rentId + "';";
                     String updateCar = "UPDATE `cars` SET `Available`='0' WHERE `ID` = '" + 
                                      selectedRent.getCar().getID() + "';";
@@ -211,27 +253,13 @@ public class ReturnCar implements Operation {
         JPanel panel = new JPanel(new BorderLayout(0, 5));
         panel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel label = new CustomLabel(labelText, 14);
         label.setForeground(ColorScheme.TEXT_PRIMARY);
         
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    private JTextField createStyledField(String initialText) {
-        JTextField field = new JTextField(initialText);
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
     }
 
     private void showError(Component parent, String message) {

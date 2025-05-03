@@ -21,45 +21,52 @@ public class EditUserData implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Edit Profile", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Edit Profile", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel formPanel = new JPanel(new GridLayout(5, 1, 0, 15));
+        JPanel formPanel = new JPanel(new GridLayout(5, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        // Create fields
-        JTextField firstName = createStyledField("First Name");
+        CustomTextField firstName = new CustomTextField(22);
         firstName.setText(user.getFirstName());
         
-        JTextField lastName = createStyledField("Last Name");
+        CustomTextField lastName = new CustomTextField(22);
         lastName.setText(user.getLastName());
         
-        JTextField email = createStyledField("Email");
+        CustomTextField email = new CustomTextField(22);
         email.setText(user.getEmail());
         
-        JTextField phoneNumber = createStyledField("Phone Number");
+        CustomTextField phoneNumber = new CustomTextField(22);
         phoneNumber.setText(user.getPhoneNumber());
 
-        // Add field panels
+        Dimension fieldSize = new Dimension(Integer.MAX_VALUE, 45);
+        firstName.setPreferredSize(fieldSize);
+        lastName.setPreferredSize(fieldSize);
+        email.setPreferredSize(fieldSize);
+        phoneNumber.setPreferredSize(fieldSize);
+
         formPanel.add(createFieldPanel("First Name", firstName));
         formPanel.add(createFieldPanel("Last Name", lastName));
         formPanel.add(createFieldPanel("Email", email));
         formPanel.add(createFieldPanel("Phone Number", phoneNumber));
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton cancelBtn = new JButton("Cancel", 22);
-        JButton saveBtn = new JButton("Save Changes", 22);
+        CustomButton cancelBtn = new CustomButton("Cancel", 22);
+        CustomButton saveBtn = new CustomButton("Save Changes", 22);
 
         cancelBtn.setBackground(ColorScheme.ACCENT);
         saveBtn.setBackground(ColorScheme.PRIMARY);
         
         cancelBtn.setForeground(Color.WHITE);
         saveBtn.setForeground(Color.WHITE);
+
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        cancelBtn.setPreferredSize(buttonSize);
+        saveBtn.setPreferredSize(buttonSize);
 
         cancelBtn.addActionListener(e -> frame.dispose());
 
@@ -91,7 +98,6 @@ public class EditUserData implements Operation {
 
                 database.getStatement().execute(update);
                 
-                // Update user object
                 user.setFirstName(firstName.getText());
                 user.setLastName(lastName.getText());
                 user.setEmail(email.getText());
@@ -120,27 +126,13 @@ public class EditUserData implements Operation {
         JPanel panel = new JPanel(new BorderLayout(0, 5));
         panel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel label = new CustomLabel(labelText, 14);
         label.setForeground(ColorScheme.TEXT_PRIMARY);
         
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    private JTextField createStyledField(String placeholder) {
-        JTextField field = new JTextField();
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
     }
 
     private void showError(Component parent, String message) {

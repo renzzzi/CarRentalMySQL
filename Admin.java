@@ -1,12 +1,12 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JLabel;  // Added this import
 
 public class Admin extends User {
     
@@ -21,16 +21,16 @@ public class Admin extends User {
                 new EditUserData(),
                 new ChangePassword()};
     
-    private JButton[] btns = new JButton[] {
-            new JButton("Add New Car", 22),
-            new JButton("View Cars", 22),
-            new JButton("Update Car", 22),
-            new JButton("Delete Car", 22),
-            new JButton("Add New Admin", 22),
-            new JButton("Show Rents", 22),
-            new JButton("Show User's Rents", 22),
-            new JButton("Edit my Data", 22),
-            new JButton("Change Password", 22)
+    private CustomButton[] btns = new CustomButton[] {
+            new CustomButton("Add New Car", 22),
+            new CustomButton("View Cars", 22),
+            new CustomButton("Update Car", 22),
+            new CustomButton("Delete Car", 22),
+            new CustomButton("Add New Admin", 22),
+            new CustomButton("Show Rents", 22),
+            new CustomButton("Show User's Rents", 22),
+            new CustomButton("Edit my Data", 22),
+            new CustomButton("Change Password", 22)
     };
     
     public Admin() {
@@ -39,7 +39,6 @@ public class Admin extends User {
 
     @Override
     public void showList(Database database, JFrame f) {
-    
         JFrame frame = new JFrame("Admin Dashboard");
         frame.setSize(500, btns.length*80);
         frame.setLocationRelativeTo(f);
@@ -50,7 +49,7 @@ public class Admin extends User {
         headerPanel.setBackground(ColorScheme.PRIMARY);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         
-        JLabel title = new JLabel("Welcome " + getFirstName(), 26);
+        CustomLabel title = new CustomLabel("Welcome " + getFirstName(), 26);
         title.setForeground(Color.WHITE);
         title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         headerPanel.add(title, BorderLayout.CENTER);
@@ -61,9 +60,10 @@ public class Admin extends User {
         panel.setBackground(ColorScheme.BACKGROUND);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 30, 30, 30));
         
-        for (int i=0;i<btns.length;i++) {
+        for (int i = 0; i < btns.length; i++) {
             final int j = i;
-            JButton button = btns[i];
+            CustomButton button = btns[i];
+            button.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
             panel.add(button);
             button.addActionListener(new ActionListener() {
                 @Override
@@ -76,5 +76,4 @@ public class Admin extends User {
         frame.add(panel, BorderLayout.CENTER);
         frame.setVisible(true);
     }
-    
 }

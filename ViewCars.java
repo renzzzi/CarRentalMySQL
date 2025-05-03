@@ -1,6 +1,8 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Dimension;
+import java.awt.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,13 +22,12 @@ public class ViewCars implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        // Title Panel
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel title = new JLabel("Car Inventory", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Car Inventory", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         titlePanel.add(title, BorderLayout.CENTER);
 
         mainPanel.add(titlePanel, BorderLayout.NORTH);
@@ -35,7 +36,6 @@ public class ViewCars implements Operation {
             "ID", "Brand", "Model", "Color", "Year", "Price", "Status"
         };
 
-        // Fetch car data
         ArrayList<Car> cars = new ArrayList<>();
         try {
             ResultSet rs = database.getStatement().executeQuery("SELECT * FROM `cars`;");
@@ -54,12 +54,11 @@ public class ViewCars implements Operation {
                 }
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(frame, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            showError(frame, e.getMessage());
             frame.dispose();
             return;
         }
 
-        // Prepare table data
         String[][] carData = new String[cars.size()][header.length];
         for (int i = 0; i < cars.size(); i++) {
             Car c = cars.get(i);
@@ -72,8 +71,7 @@ public class ViewCars implements Operation {
             carData[i][6] = c.isAvailable() == 0 ? "Available" : "Rented";
         }
 
-        // Create and style table
-        JTable table = new JTable(carData, header, ColorScheme.PRIMARY, ColorScheme.SURFACE);
+        CustomTable table = new CustomTable(carData, header);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBackground(ColorScheme.BACKGROUND);
         scrollPane.getViewport().setBackground(ColorScheme.BACKGROUND);
@@ -81,10 +79,10 @@ public class ViewCars implements Operation {
 
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add close button
-        JButton closeButton = new JButton("Close", 22);
+        CustomButton closeButton = new CustomButton("Close", 22);
         closeButton.setBackground(ColorScheme.ACCENT);
         closeButton.setForeground(Color.WHITE);
+        closeButton.setPreferredSize(new Dimension(120, 45));
         closeButton.addActionListener(e -> frame.dispose());
 
         JPanel buttonPanel = new JPanel(new BorderLayout());
@@ -98,7 +96,7 @@ public class ViewCars implements Operation {
         frame.setVisible(true);
     }
 
-    private void showError(JComponent parent, String message) {
+    private void showError(Component parent, String message) {
         JOptionPane.showMessageDialog(parent, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

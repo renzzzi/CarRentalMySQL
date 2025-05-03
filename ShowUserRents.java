@@ -2,6 +2,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,13 +29,12 @@ public class ShowUserRents implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        // Title Panel
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel title = new JLabel("Rental History", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Rental History", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         titlePanel.add(title, BorderLayout.CENTER);
 
         mainPanel.add(titlePanel, BorderLayout.NORTH);
@@ -48,7 +48,6 @@ public class ShowUserRents implements Operation {
         ArrayList<Integer> carIDs = new ArrayList<>();
         
         try {
-            // Get rental data
             String select = "SELECT * FROM `rents` WHERE `User` = '" + userID + "';";
             ResultSet rs = database.getStatement().executeQuery(select);
             while (rs.next()) {
@@ -62,7 +61,6 @@ public class ShowUserRents implements Operation {
                 rents.add(rent);
             }
 
-            // Get user data
             String selectUser = "SELECT * FROM `users` WHERE `ID` = '" + userID + "';";
             ResultSet rs2 = database.getStatement().executeQuery(selectUser);
             if (rs2.next()) {
@@ -73,13 +71,11 @@ public class ShowUserRents implements Operation {
                 u.setEmail(rs2.getString("Email"));
                 u.setPhoneNumber(rs2.getString("PhoneNumber"));
 
-                // Set user for all rentals
                 for (Rent r : rents) {
                     r.setUser(u);
                 }
             }
 
-            // Get car data for each rental
             for (int j = 0; j < rents.size(); j++) {
                 Rent r = rents.get(j);
                 ResultSet rs3 = database.getStatement()
@@ -101,7 +97,6 @@ public class ShowUserRents implements Operation {
             return;
         }
 
-        // Prepare table data
         String[][] rentData = new String[rents.size()][header.length];
         for (int i = 0; i < rents.size(); i++) {
             Rent r = rents.get(i);
@@ -118,8 +113,7 @@ public class ShowUserRents implements Operation {
             rentData[i][9] = r.getStatusToString();
         }
 
-        // Create and style table
-        JTable table = new JTable(rentData, header, ColorScheme.PRIMARY, ColorScheme.SURFACE);
+        CustomTable table = new CustomTable(rentData, header);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBackground(ColorScheme.BACKGROUND);
         scrollPane.getViewport().setBackground(ColorScheme.BACKGROUND);
@@ -127,10 +121,10 @@ public class ShowUserRents implements Operation {
 
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add close button
-        JButton closeButton = new JButton("Close", 22);
+        CustomButton closeButton = new CustomButton("Close", 22);
         closeButton.setBackground(ColorScheme.ACCENT);
         closeButton.setForeground(Color.WHITE);
+        closeButton.setPreferredSize(new Dimension(120, 45));
         closeButton.addActionListener(e -> frame.dispose());
 
         JPanel buttonPanel = new JPanel(new BorderLayout());

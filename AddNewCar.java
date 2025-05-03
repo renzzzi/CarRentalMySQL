@@ -22,19 +22,26 @@ public class AddNewCar implements Operation {
         mainPanel.setBackground(ColorScheme.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        JLabel title = new JLabel("Add New Car", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setForeground(ColorScheme.TEXT_PRIMARY);
+        CustomLabel title = new CustomLabel("Add New Car", 32);
+        title.setForeground(ColorScheme.PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
-        JPanel formPanel = new JPanel(new GridLayout(6, 1, 0, 15));
+        JPanel formPanel = new JPanel(new GridLayout(6, 1, 0, 20));
         formPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JTextField brand = createStyledField("Brand");
-        JTextField model = createStyledField("Model");
-        JTextField color = createStyledField("Color");
-        JTextField year = createStyledField("Year");
-        JTextField price = createStyledField("Price per Hour");
+        CustomTextField brand = new CustomTextField(22);
+        CustomTextField model = new CustomTextField(22);
+        CustomTextField color = new CustomTextField(22);
+        CustomTextField year = new CustomTextField(22);
+        CustomTextField price = new CustomTextField(22);
+
+        Dimension fieldSize = new Dimension(Integer.MAX_VALUE, 45);
+        brand.setPreferredSize(fieldSize);
+        model.setPreferredSize(fieldSize);
+        color.setPreferredSize(fieldSize);
+        year.setPreferredSize(fieldSize);
+        price.setPreferredSize(fieldSize);
 
         formPanel.add(createFieldPanel("Brand", brand));
         formPanel.add(createFieldPanel("Model", model));
@@ -42,11 +49,21 @@ public class AddNewCar implements Operation {
         formPanel.add(createFieldPanel("Year", year));
         formPanel.add(createFieldPanel("Price per Hour", price));
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         buttonPanel.setBackground(ColorScheme.BACKGROUND);
 
-        JButton cancelBtn = new JButton("Cancel", 22);  // Fixed constructor
-        JButton confirmBtn = new JButton("Confirm", 22);  // Fixed constructor
+        CustomButton cancelBtn = new CustomButton("Cancel", 22);
+        CustomButton confirmBtn = new CustomButton("Confirm", 22);
+
+        cancelBtn.setBackground(ColorScheme.ACCENT);
+        confirmBtn.setBackground(ColorScheme.PRIMARY);
+        
+        cancelBtn.setForeground(Color.WHITE);
+        confirmBtn.setForeground(Color.WHITE);
+
+        Dimension buttonSize = new Dimension(Integer.MAX_VALUE, 45);
+        cancelBtn.setPreferredSize(buttonSize);
+        confirmBtn.setPreferredSize(buttonSize);
 
         cancelBtn.addActionListener(e -> frame.dispose());
 
@@ -120,47 +137,13 @@ public class AddNewCar implements Operation {
         JPanel panel = new JPanel(new BorderLayout(0, 5));
         panel.setBackground(ColorScheme.BACKGROUND);
         
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        CustomLabel label = new CustomLabel(labelText, 14);
         label.setForeground(ColorScheme.TEXT_PRIMARY);
         
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    private JTextField createStyledField(String placeholder) {
-        JTextField field = new JTextField();
-        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 35));
-        field.setBackground(ColorScheme.SURFACE);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
-    }
-
-    private JButton createStyledButton(String text, Color bgColor) {
-        JButton button = new JButton(text, 22);  // Fixed constructor
-        button.setBackground(bgColor);
-        button.setForeground(Color.WHITE);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        button.setFocusPainted(false);
-        
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor.darker());
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor);
-            }
-        });
-        
-        return button;
     }
 
     private void showError(Component parent, String message) {

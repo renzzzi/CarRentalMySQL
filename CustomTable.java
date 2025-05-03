@@ -1,17 +1,21 @@
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 @SuppressWarnings("serial")
-public class JTable extends javax.swing.JTable {
-    public JTable(String[][] data, String[] header, Color color1, Color color2) {
+public class CustomTable extends javax.swing.JTable {
+    public CustomTable(String[][] data, String[] header) {
         super(new DefaultTableModel(data, header));
-        setRowHeight(40);
-        setBackground(null);
+        setRowHeight(50);
+        setBackground(ColorScheme.BACKGROUND);
+        setShowGrid(true);
+        setIntercellSpacing(new Dimension(1, 1));
 
         DefaultTableModel tableModel = new DefaultTableModel(data, header) {
             @Override
@@ -27,12 +31,15 @@ public class JTable extends javax.swing.JTable {
                 boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(JLabel.CENTER);
-                setFont(new Font("Segoe UI", Font.BOLD, 20));
-                if (hasFocus) setBorder(null);
-                if (row % 2 == 0) {
-                    setBackground(Color.WHITE);
+                setFont(new Font("Segoe UI", Font.PLAIN, 16));
+                setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                
+                if (isSelected) {
+                    setBackground(ColorScheme.SECONDARY);
+                    setForeground(Color.WHITE);
                 } else {
-                    setBackground(color2);
+                    setBackground(row % 2 == 0 ? ColorScheme.BACKGROUND : ColorScheme.SURFACE);
+                    setForeground(ColorScheme.TEXT_PRIMARY);
                 }
                 return this;
             }
@@ -48,17 +55,18 @@ public class JTable extends javax.swing.JTable {
                 boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(JLabel.CENTER);
-                setFont(new Font("Segoe UI", Font.BOLD, 20));
-                setBackground(color1);
+                setFont(new Font("Segoe UI", Font.BOLD, 16));
+                setBackground(ColorScheme.PRIMARY);
                 setForeground(Color.WHITE);
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 return this;
             }
         };
+        
         getTableHeader().setDefaultRenderer(headerRenderer);
-        getTableHeader().setBorder(BorderFactory.createMatteBorder(2, 2, 1, 2, color1));
-        setBorder(BorderFactory.createMatteBorder(1, 2, 2, 2, color1));
-        setGridColor(color1);
-        setRowSelectionAllowed(false);
+        getTableHeader().setBorder(null);
+        setBorder(BorderFactory.createLineBorder(ColorScheme.BORDER));
+        setGridColor(ColorScheme.BORDER);
+        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 }

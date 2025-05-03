@@ -23,7 +23,7 @@ public class Main {
     }
 
     public static void start() {
-        JFrame frame = new JFrame("Car Rental System");
+        JFrame frame = new JFrame("Car Rental System by Renz");
         frame.setSize(900, 600);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,28 +34,38 @@ public class Main {
         JPanel loginCard = new JPanel();
         loginCard.setBackground(ColorScheme.SURFACE);
         loginCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER, 2),
-            BorderFactory.createEmptyBorder(30, 40, 30, 40)
+            BorderFactory.createMatteBorder(0, 0, 3, 0, ColorScheme.PRIMARY),
+            BorderFactory.createEmptyBorder(40, 50, 40, 50)
         ));
         loginCard.setLayout(new BoxLayout(loginCard, BoxLayout.Y_AXIS));
         
-        JLabel logo = new JLabel("Car Rental System");
-        logo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        CustomLabel logo = new CustomLabel("Car Rental System", 36);
         logo.setForeground(ColorScheme.PRIMARY);
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        final JTextField email = createStyledTextField("Email");
-        final JPasswordField password = createStyledPasswordField();
+        JPanel emailPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        emailPanel.setBackground(ColorScheme.SURFACE);
+        CustomTextField email = new CustomTextField(22);
+        email.setPreferredSize(new Dimension(300, 40));
+        emailPanel.add(email);
         
-        JButton loginButton = new JButton("Login", 22);
-        loginButton.setBackground(ColorScheme.PRIMARY);
-        loginButton.setForeground(Color.WHITE);
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JButton createAccountButton = new JButton("Create Account", 22);
-        createAccountButton.setBackground(ColorScheme.ACCENT);
-        createAccountButton.setForeground(Color.WHITE);
-        createAccountButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        passwordPanel.setBackground(ColorScheme.SURFACE);
+        CustomPasswordField password = new CustomPasswordField(22);
+        password.setPreferredSize(new Dimension(300, 40));
+        passwordPanel.add(password);
+        
+        JPanel loginButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        loginButtonPanel.setBackground(ColorScheme.SURFACE);
+        CustomButton loginButton = new CustomButton("Login", 22);
+        loginButton.setPreferredSize(new Dimension(300, 45));
+        loginButtonPanel.add(loginButton);
+        
+        JPanel createAccountPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        createAccountPanel.setBackground(ColorScheme.SURFACE);
+        CustomButton createAccountButton = new CustomButton("Create Account", 22);
+        createAccountButton.setPreferredSize(new Dimension(300, 45));
+        createAccountPanel.add(createAccountButton);
 
         final ArrayList<User> users = new ArrayList<>();
         try {
@@ -112,14 +122,14 @@ public class Main {
         });
 
         loginCard.add(logo);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 40)));
+        loginCard.add(emailPanel);
+        loginCard.add(Box.createRigidArea(new Dimension(0, 20)));
+        loginCard.add(passwordPanel);
         loginCard.add(Box.createRigidArea(new Dimension(0, 30)));
-        loginCard.add(email);
+        loginCard.add(loginButtonPanel);
         loginCard.add(Box.createRigidArea(new Dimension(0, 15)));
-        loginCard.add(password);
-        loginCard.add(Box.createRigidArea(new Dimension(0, 25)));
-        loginCard.add(loginButton);
-        loginCard.add(Box.createRigidArea(new Dimension(0, 10)));
-        loginCard.add(createAccountButton);
+        loginCard.add(createAccountPanel);
 
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setBackground(ColorScheme.BACKGROUND);
@@ -128,32 +138,6 @@ public class Main {
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.add(mainPanel);
         frame.setVisible(true);
-    }
-
-    private static JTextField createStyledTextField(String placeholder) {
-        JTextField field = new JTextField(20);
-        field.setBackground(ColorScheme.BACKGROUND);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(8, 10, 8, 10)
-        ));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setHorizontalAlignment(JTextField.CENTER);  // Add this line
-        return field;
-    }
-    
-    private static JPasswordField createStyledPasswordField() {
-        JPasswordField field = new JPasswordField(20);
-        field.setBackground(ColorScheme.BACKGROUND);
-        field.setForeground(ColorScheme.TEXT_PRIMARY);
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.BORDER),
-            BorderFactory.createEmptyBorder(8, 10, 8, 10)
-        ));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setHorizontalAlignment(JTextField.CENTER);  // Add this line
-        return field;
     }
 
     private static void showError(Component parent, String message) {
